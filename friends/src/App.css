@@ -1,0 +1,37 @@
+.App {
+  /* text-align: center; */
+}
+
+li {
+  list-style-type: none;
+}
+
+ul {
+  display: flex;
+  flex-flow: wrap row;
+}
+
+li {
+  width: 27%;
+  padding: 1%;
+  margin: 1%;
+  background: grey;
+  display: flex;
+  flex-flow: nowrap column;
+}
+
+span {
+  flex: 1 1 auto;
+  padding: 1%;
+}
+
+form {
+  display: flex;
+  flex-flow: wrap column;
+  width: 50%;
+  padding: 1%;
+  margin: 0.5%;
+  border: 1px solid black;
+  border-radius: 5%;
+  background-color: grey;
+}
