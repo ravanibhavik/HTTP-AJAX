@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { getFriends, addFriend } from '../actions';
+import { getFriends, addFriend, updateFriend, deleteFriend } from '../actions';
 import { connect } from 'react-redux';
 
 class Friends extends Component {
@@ -15,6 +15,9 @@ class Friends extends Component {
     this.handleEmailChange = this.handleEmailChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleUpdate = this.handleUpdate.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleElementTextUpdate = this.handleElementTextUpdate.bind(this);
+    this.updateFriend = this.updateFriend.bind(this);
   }
 
   handleNameChange = (event) => {
@@ -35,28 +38,46 @@ class Friends extends Component {
     this.setState({name: '', age: '', email: ''});
   }
 
-  handleUpdate(event) {
+  handleElementTextUpdate(event) {
     let element = event.target;
-    element.style.display = "none";
     let text = element.innerHTML;
+    element.style.display = "none";
     let input = document.createElement("input");
     input.type = "text";
     input.value = text;
     input.size = Math.max(text.length / 4 * 3, 4);
     element.parentNode.insertBefore(input, element);
     input.select();
+    
     input.addEventListener("blur", (event) => {
       event.target.parentNode.removeChild(event.target);
       element.innerHTML = input.value === "" ? "&nbsp;" : input.value;
-      element.style.display = "";  
+      element.style.display = "";
     })
-    if (element.parentNode.querySelector("input[type='submit']") === null) {
-      let update = document.createElement("input");
-      update.type = "submit";
-      update.value = "Update";
-      update.onClick = () => { this.props.updateFriend({ index: element.parentNode.key, update: this.state });
-      element.parentNode.appendChild(update);
-    }
+  }
+
+  handleUpdate(event) {
+    event.preventDefault();
+    let index = event.target.dataset.param;
+    let parent = event.target.parentNode;
+    this.setState({
+      name: parent.querySelector("span[class='name']").innerHTML, 
+      age: parent.querySelector("span[class='age']").innerHTML, 
+      email: parent.querySelector("span[class='email']").innerHTML 
+    }, () => {
+      this.updateFriend({ index, update: this.state })
+    });
+  }
+
+  handleDelete(event) {
+    event.preventDefault();
+    let index = event.target.dataset.param;
+    this.props.deleteFriend({ index });
+  }
+
+  updateFriend(data) {
+    this.props.updateFriend(data);
+    this.setState({name: '', age: '', email: ''});
   }
   
   componentDidMount() {
@@ -70,7 +91,7 @@ class Friends extends Component {
           <label htmlFor="name">Name: </label>
           <input id="name" type="text" placeholder="Add Name..." onChange={ this.handleNameChange } value={ this.state.name } />
           <label htmlFor="age">Age: </label>
-          <input id="age" type="text" placeholder="Add Age..." onChange={ this.handleAgeChange } value={ this.state.age } />
+          <input id="age" type="number" placeholder="Add Age..." onChange={ this.handleAgeChange } value={ this.state.age } />
           <label htmlFor="email">Email: </label>
           <input id="email" type="text" placeholder="Add Email..." onChange={ this.handleEmailChange } value={ this.state.email } />
           <input type="submit" value="Submit"/> 
@@ -81,9 +102,11 @@ class Friends extends Component {
           this.props.friends.map((friend, index) => {
             return (
               <li key={index}>
-                <span onClick = { this.handleUpdate }>{ friend.name }</span>
-                <span onClick = { this.handleUpdate }>{ friend.age }</span>
-                <span onClick = { this.handleUpdate }>{ friend.email }</span> 
+                <span onClick={ this.handleElementTextUpdate } className="name">{ friend.name }</span>
+                <span onClick={ this.handleElementTextUpdate } className="age">{ friend.age }</span>
+                <span onClick={ this.handleElementTextUpdate } className="email">{ friend.email }</span>
+                <input type="submit" value="Update" data-param={index} onClick={ this.handleUpdate } />
+                <input type="submit" value="Delete" data-param={index} onClick={ this.handleDelete } />
               </li>
             )
           })
@@ -100,4 +123,4 @@ const mapStoreToProps = (state) => {
   }
 }
 
-export default connect(mapStoreToProps, { getFriends, addFriend, updateFriend })(Friends);
+export default connect(mapStoreToProps, { getFriends, addFriend, updateFriend, deleteFriend })(Friends);
